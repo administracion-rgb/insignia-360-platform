@@ -1,14 +1,14 @@
 'use client';
-import React, { useState } from 'react'; // Importamos useState para manejar el formulario
+import React, { useState } from 'react';
 import { 
   ShieldCheck, Brain, Lock, Globe, FileText, 
   Search, CheckCircle2, TrendingUp, Users, 
   ArrowRight, Activity, Clock, Database, ChevronRight, AlertTriangle,
-  HardHat, Car, Megaphone, AlertCircle, Send // Importamos icono de envío
+  HardHat, Car, Megaphone, AlertCircle, Send
 } from 'lucide-react';
 import Link from 'next/link';
 
-// Importaciones ajustadas a tu estructura
+// Importaciones estructurales
 import Navbar from '@/components/ui/Navbar'; 
 import Footer from '../Footer'; 
 
@@ -33,15 +33,14 @@ export default function SolutionsPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // SIMULACIÓN DE ENVÍO (Aquí conectarías con tu backend)
+    // SIMULACIÓN DE ENVÍO
     console.log("Enviando formulario:", formData);
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Espera simulada de 2s
+    await new Promise(resolve => setTimeout(resolve, 2000)); 
 
     setIsSubmitting(false);
     setSubmitSuccess(true);
-    setFormData({ name: '', email: '', company: '', message: '' }); // Limpiar formulario
+    setFormData({ name: '', email: '', company: '', message: '' }); 
 
-    // Resetear mensaje de éxito después de 5 segundos
     setTimeout(() => setSubmitSuccess(false), 5000);
   };
 
@@ -215,7 +214,8 @@ export default function SolutionsPage() {
             {hrSolutions.map((sol, index) => (
               <div key={index} className="group relative bg-[#001233] border border-white/10 p-10 rounded-[3rem] hover:border-[#00AEEF]/50 transition-all duration-500 shadow-2xl flex flex-col h-full">
                 <div className="mb-8 p-5 bg-white/5 w-fit rounded-2xl group-hover:bg-[#00AEEF] group-hover:text-[#001233] transition-colors duration-300">
-                  {React.cloneElement(sol.icon as React.ReactElement, { className: "group-hover:text-[#001233] transition-colors" })}
+                  {/* CORRECCIÓN: Evitamos cloneElement si da problemas, o aseguramos el tipo */}
+                  {React.cloneElement(sol.icon as React.ReactElement, { className: "group-hover:text-[#001233] transition-colors" } as any)}
                 </div>
                 
                 <h4 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-1">{sol.title}</h4>
@@ -228,7 +228,6 @@ export default function SolutionsPage() {
                 <ul className="space-y-3 pt-6 border-t border-white/5">
                   {sol.features.map((feat, i) => (
                     <li key={i} className="flex items-start gap-3">
-                      {/* CAMBIO DE COLOR EN CHECK SI ES BURÓ */}
                       <CheckCircle2 size={16} className={`shrink-0 mt-0.5 ${feat.includes("Buró") ? "text-yellow-500" : "text-[#00AEEF]"}`} />
                       <span className={`text-xs font-bold ${feat.includes("Buró") ? "text-yellow-100" : "text-white/80"}`}>{feat}</span>
                     </li>
@@ -317,7 +316,6 @@ export default function SolutionsPage() {
                   <div className="p-4 bg-[#001233] rounded-2xl text-white group-hover:text-[#00AEEF] transition-colors border border-white/10 shadow-lg">
                     {service.icon}
                   </div>
-                  {/* Enlace al hash #contacto para que baje al formulario */}
                   <Link href="#contacto">
                     <button className="text-[10px] font-black uppercase tracking-widest text-[#00AEEF] border border-[#00AEEF]/30 px-4 py-2 rounded-full hover:bg-[#00AEEF] hover:text-[#001233] transition-all">
                       Cotizar

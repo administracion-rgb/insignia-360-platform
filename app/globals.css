@@ -1,28 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  /* PALETA: Estilo "Clinical Cyber" (Teal Profundo + Cian/Menta) */
-  --color-insignia-blue: #003d4d; /* Fondo Teal Profundo */
-  --color-tech-accent: #00e5ff;   /* Cian Eléctrico */
-  --color-tech-secondary: #2dd4bf; /* Menta Suave */
-  
-  /* --- ANIMACIONES DE ALTO IMPACTO --- */
-  
-  /* 1. Entrada Dramática */
+  /* DEFINICIÓN DE COLORES DEL SISTEMA */
+  --color-insignia-blue: #001233;
+  --color-tech-accent: #00AEEF;
+  --color-tech-secondary: #2dd4bf;
+
+  /* DEFINICIÓN DE FUENTES */
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+
+  /* ANIMACIONES PERSONALIZADAS */
   --animate-fade-in-up: fade-in-up 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  
-  /* 2. Textos Metálicos que brillan */
   --animate-gradient-x: gradient-x 3s ease infinite;
-  
-  /* 3. Elementos que flotan (gravedad cero) */
   --animate-float-slow: float 8s ease-in-out infinite;
-  --animate-float-medium: float 5s ease-in-out infinite;
-  
-  /* 4. Anillos Tecnológicos Giratorios (El núcleo) */
   --animate-spin-slow: spin 20s linear infinite;
-  --animate-spin-reverse-slow: spin-reverse 25s linear infinite;
-  
-  /* 5. Luces que "respiran" */
   --animate-pulse-glow: pulse-glow 4s ease-in-out infinite;
 
   @keyframes fade-in-up {
@@ -37,56 +28,35 @@
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-20px); }
   }
-  @keyframes spin-reverse {
-    from { transform: rotate(360deg); }
-    to { transform: rotate(0deg); }
-  }
   @keyframes pulse-glow {
     0%, 100% { opacity: 0.5; transform: scale(1); }
     50% { opacity: 0.9; transform: scale(1.05); }
   }
 }
 
+/* ESTILOS BASE */
 @layer base {
   body {
-    font-family: var(--font-montserrat), sans-serif;
     @apply antialiased text-white bg-insignia-blue;
-    overscroll-behavior-y: none; /* Evita rebote en Mac */
+    overscroll-behavior-y: none;
   }
   
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold tracking-tight text-white;
   }
-
-  /* Scrollbar Cyber-Clinical */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    background: #002833;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: var(--color-tech-secondary); 
-    border-radius: 4px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-tech-accent);
-  }
 }
 
+/* COMPONENTES */
 @layer components {
-  /* Botón con gradiente clínico y brillo */
   .btn-clinical {
     @apply bg-gradient-to-r from-tech-secondary to-tech-accent text-insignia-blue font-bold py-4 px-10 rounded-lg hover:shadow-[0_0_30px_rgba(45,212,191,0.6)] hover:scale-105 transition-all duration-300 flex items-center gap-3 uppercase tracking-widest text-xs shadow-lg shadow-tech-accent/20;
   }
 
-  /* Botón Píldora Transparente (Glassmorphism) */
   .btn-glass {
     @apply px-10 py-4 rounded-full border border-white/20 bg-white/5 text-white font-bold backdrop-blur-md hover:bg-white/10 hover:border-tech-accent/50 hover:text-tech-accent transition-all duration-300 flex items-center gap-3 uppercase tracking-widest text-xs;
   }
 }
 
-/* UTILIDAD 3D: Necesaria para el efecto de profundidad */
 @layer utilities {
   .perspective-1000 {
     perspective: 1000px;

@@ -167,19 +167,20 @@ export default function PricingPage() {
 
           <div className={`grid gap-6 items-stretch animate-fade-in-up grid-cols-1 md:grid-cols-2 lg:grid-cols-4 ${activeTab === 'credits' ? 'lg:grid-cols-5' : ''} justify-center`}>
             {(activeTab === 'credits' ? groupCredits : activeTab === 'unlimited' ? groupUnlimited : groupVacancies).map((plan, index) => (
-              <div key={index} className={`relative p-8 flex flex-col rounded-[2.5rem] border backdrop-blur-md transition-all duration-500 group ${plan.highlight ? 'bg-white/[0.07] border-[#00AEEF] shadow-[0_0_30px_rgba(0,174,239,0.2)] z-10 scale-[1.02]' : 'bg-[#001a4d]/40 border-white/10 hover:border-white/20'}`}>
+              <div key={index} className={`relative p-8 flex flex-col rounded-[2.5rem] border backdrop-blur-md transition-all duration-500 group ${(plan as any).highlight ? 'bg-white/[0.07] border-[#00AEEF] shadow-[0_0_30px_rgba(0,174,239,0.2)] z-10 scale-[1.02]' : 'bg-[#001a4d]/40 border-white/10 hover:border-white/20'}`}>
                 
-                {plan.savings && (
+                {/* CORRECCIÓN: (plan as any).savings */}
+                {(plan as any).savings && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#00AEEF] to-[#2dd4bf] text-[#001233] px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-2 shadow-lg group-hover:scale-110 transition-transform z-20 whitespace-nowrap">
-                    <Sparkles size={12} /> {plan.savings}
+                    <Sparkles size={12} /> {(plan as any).savings}
                   </div>
                 )}
 
                 <div className="mb-6 text-left relative z-10">
-                  <div className={`w-12 h-12 inline-flex items-center justify-center rounded-xl mb-6 shadow-xl transition-all duration-500 group-hover:rotate-[10deg] ${plan.highlight ? 'bg-[#00AEEF] text-[#001233]' : 'bg-white/5 text-white'}`}>
+                  <div className={`w-12 h-12 inline-flex items-center justify-center rounded-xl mb-6 shadow-xl transition-all duration-500 group-hover:rotate-[10deg] ${(plan as any).highlight ? 'bg-[#00AEEF] text-[#001233]' : 'bg-white/5 text-white'}`}>
                     {plan.icon}
                   </div>
-                  <p className={`text-[9px] font-black uppercase tracking-widest mb-2 ${plan.highlight ? 'text-[#00AEEF]' : 'text-white/40'}`}>{plan.focus}</p>
+                  <p className={`text-[9px] font-black uppercase tracking-widest mb-2 ${(plan as any).highlight ? 'text-[#00AEEF]' : 'text-white/40'}`}>{plan.focus}</p>
                   <h3 className="text-xl font-black italic uppercase text-white mb-3 leading-tight tracking-tighter">{plan.name}</h3>
                   <div className="flex items-baseline gap-1 mb-4">
                     {discount > 0 && <span className="text-sm line-through text-white/20 font-bold mr-2">${plan.price.toLocaleString()}</span>}
@@ -188,7 +189,8 @@ export default function PricingPage() {
                   </div>
                   
                   <p className="text-[13px] text-blue-100/70 font-medium mb-4 leading-relaxed italic group-hover:text-blue-100 transition-colors min-h-[5rem] h-auto text-left">
-                    {plan.details || (plan as any).description}
+                    {/* CORRECCIÓN: (plan as any).details || (plan as any).description */}
+                    {(plan as any).details || (plan as any).description}
                   </p>
 
                   {/* ALERTA DE CONSENTIMIENTO PARA BURÓ */}
@@ -213,12 +215,12 @@ export default function PricingPage() {
                 <ul className="text-left space-y-3 mb-8 pt-6 border-t border-white/5 relative z-10">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start gap-2.5 group/item text-left">
-                      <Check size={16} className={`shrink-0 mt-0.5 transition-transform group-hover/item:scale-125 ${plan.highlight ? 'text-[#00AEEF]' : 'text-white/20'}`} />
+                      <Check size={16} className={`shrink-0 mt-0.5 transition-transform group-hover/item:scale-125 ${(plan as any).highlight ? 'text-[#00AEEF]' : 'text-white/20'}`} />
                       <span className={`text-[10px] font-bold uppercase tracking-wide leading-tight ${feature.includes("Vigencia") ? "text-white font-black" : "text-blue-100/80"}`}>{feature}</span>
                     </li>
                   ))}
                 </ul>
-                <button className={`w-full py-5 rounded-xl font-black uppercase text-[9px] tracking-widest mt-auto transition-all active:scale-95 z-10 ${plan.btnStyle}`}>
+                <button className={`w-full py-5 rounded-xl font-black uppercase text-[9px] tracking-widest mt-auto transition-all active:scale-95 z-10 ${(plan as any).btnStyle}`}>
                   {plan.buttonText}
                 </button>
               </div>
