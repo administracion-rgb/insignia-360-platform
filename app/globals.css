@@ -1,21 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-  /* DEFINICIÓN DE COLORES DEL SISTEMA */
+  /* --- PALETA DE COLORES --- */
   --color-insignia-blue: #001233;
   --color-tech-accent: #00AEEF;
   --color-tech-secondary: #2dd4bf;
 
-  /* DEFINICIÓN DE FUENTES */
-  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
-
-  /* ANIMACIONES PERSONALIZADAS */
+  /* --- ANIMACIONES --- */
+  --animate-fade-in: fade-in 0.5s ease-out forwards;
   --animate-fade-in-up: fade-in-up 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   --animate-gradient-x: gradient-x 3s ease infinite;
   --animate-float-slow: float 8s ease-in-out infinite;
   --animate-spin-slow: spin 20s linear infinite;
   --animate-pulse-glow: pulse-glow 4s ease-in-out infinite;
 
+  @keyframes fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
   @keyframes fade-in-up {
     0% { opacity: 0; transform: translateY(30px); filter: blur(10px); }
     100% { opacity: 1; transform: translateY(0); filter: blur(0); }
@@ -34,31 +36,43 @@
   }
 }
 
-/* ESTILOS BASE */
-@layer base {
-  body {
-    @apply antialiased text-white bg-insignia-blue;
-    overscroll-behavior-y: none;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-bold tracking-tight text-white;
-  }
+/* --- ESTILOS BASE (CSS ESTÁNDAR PARA EVITAR ERRORES) --- */
+/* Usamos CSS normal aquí para que Vercel no falle compilando @apply */
+body {
+  background-color: var(--color-insignia-blue);
+  color: white;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior-y: none;
 }
 
-/* COMPONENTES */
-@layer components {
-  .btn-clinical {
-    @apply bg-gradient-to-r from-tech-secondary to-tech-accent text-insignia-blue font-bold py-4 px-10 rounded-lg hover:shadow-[0_0_30px_rgba(45,212,191,0.6)] hover:scale-105 transition-all duration-300 flex items-center gap-3 uppercase tracking-widest text-xs shadow-lg shadow-tech-accent/20;
-  }
-
-  .btn-glass {
-    @apply px-10 py-4 rounded-full border border-white/20 bg-white/5 text-white font-bold backdrop-blur-md hover:bg-white/10 hover:border-tech-accent/50 hover:text-tech-accent transition-all duration-300 flex items-center gap-3 uppercase tracking-widest text-xs;
-  }
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 900; /* equivalenta a font-black */
+  letter-spacing: -0.025em; /* equivalent a tracking-tight */
 }
 
+/* Scrollbar Personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #000d21;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-tech-secondary); 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-tech-accent);
+}
+
+/* --- COMPONENTES Y UTILIDADES --- */
 @layer utilities {
   .perspective-1000 {
     perspective: 1000px;
+  }
+  
+  .text-balance {
+    text-wrap: balance;
   }
 }

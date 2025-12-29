@@ -17,11 +17,14 @@ export default function PricingPage() {
   const [coupon, setCoupon] = useState('');
   const [discount, setDiscount] = useState(0);
 
-  // Lógica de validación de cupones (Solo 20%)
+  // Lógica de validación de cupones
+  // ESTRATEGIA: El precio base ya incluye el colchón del 10%. 
+  // Al dar el 20% aquí, el precio final queda atractivo pero protege tu margen.
   const handleCouponChange = (val: string) => {
     const code = val.toUpperCase();
     setCoupon(code);
-    if (code === 'INSIGNIA20') setDiscount(0.20);
+    if (code === 'INSIGNIA20') setDiscount(0.20); // Regresamos al 20% estándar
+    else if (code === 'INSIGNIA30') setDiscount(0.30); // Preparamos lógica para futuro 30%
     else setDiscount(0);
   };
 
@@ -30,24 +33,27 @@ export default function PricingPage() {
     return Math.floor(finalPrice).toLocaleString();
   };
 
-  // GRUPO 1: CRÉDITOS ON-DEMAND
+  // GRUPO 1: CRÉDITOS ON-DEMAND (Precios Ajustados +10%)
   const groupCredits = [
     {
-      name: "Prueba Individual", price: 270, focus: "Evaluación Única",
+      // Antes: 270 -> Ahora: 299
+      name: "Prueba Individual", price: 299, focus: "Evaluación Única",
       details: "Acceso a la compra de una sola prueba psicométrica técnica de nuestro catálogo base para validación puntual de conocimientos o rasgos específicos de personal operativo y administrativo. No incluye integración de batería.",
       icon: <MousePointerClick size={28} className="text-[#00AEEF]" />,
       features: ["1 Prueba técnica a elegir", "Reporte Automático PDF", "Vigencia 3 Meses", "Add-ons: Honestidad/Buró"],
       buttonText: "Adquirir Crédito", highlight: false, btnStyle: "border border-white/20 hover:bg-white/5 text-white"
     },
     {
-      name: "Batería Operativa", price: 699, focus: "Administrativo y Staff",
+      // Antes: 699 -> Ahora: 769
+      name: "Batería Operativa", price: 769, focus: "Administrativo y Staff",
       details: "Batería completa diseñada para perfiles operativos y administrativos. Incluye 3 pruebas integradas en un solo diagnóstico ejecutivo para una validación integral de competencias administrativas y staff.",
       icon: <Layers size={28} className="text-[#00AEEF]" />,
       features: ["3 Pruebas Integradas", "Reporte Ejecutivo PDF", "Vigencia 3 Meses", "Add-ons: Honestidad/Buró"],
       buttonText: "Comprar Operativa", highlight: false, btnStyle: "border border-white/20 hover:bg-white/5 text-white"
     },
     {
-      name: "Batería Premium", price: 1049, focus: "Directivo y Gerencia",
+      // Antes: 1049 -> Ahora: 1155
+      name: "Batería Premium", price: 1155, focus: "Directivo y Gerencia",
       details: "Evaluaciones de alta complejidad (Terman, Moss, 16PF) diseñadas para perfiles de liderazgo, gerencia, directivos o puestos técnicos de alta especialización (TI/Ingenierías) que requieren un diagnóstico profundo.",
       icon: <Star size={28} className="text-[#00AEEF]" />,
       features: ["3 Pruebas de Élite", "Análisis de Liderazgo", "Vigencia 3 Meses", "Add-ons: Honestidad/Buró"],
@@ -55,15 +61,17 @@ export default function PricingPage() {
       btnStyle: "bg-[#00AEEF] text-[#001233] font-bold hover:bg-white shadow-[0_0_20px_rgba(0,174,239,0.4)]"
     },
     {
-      name: "Módulo Honestidad", price: 428, focus: "Blindaje Ético",
+      // Antes: 428 -> Ahora: 475
+      name: "Módulo Honestidad", price: 475, focus: "Blindaje Ético",
       details: "Herramienta preventiva de riesgos patrimoniales y lealtad organizacional. Analiza el apego a códigos de ética corporativos mediante métricas de sinceridad, valores y comportamiento ético laboral.",
       icon: <ShieldCheck size={28} className="text-[#2dd4bf]" />,
       features: ["Detección de Riesgos", "Escala de Sinceridad", "Vigencia 3 Meses", "Como Add-on: $149"],
       buttonText: "Añadir Blindaje", highlight: false, btnStyle: "border border-[#2dd4bf] text-[#2dd4bf] hover:bg-[#2dd4bf] hover:text-[#001233] font-bold"
     },
-    // ADD-ON: BURÓ DE CRÉDITO CON LEYENDA DE PROTECCIÓN
+    // ADD-ON: BURÓ DE CRÉDITO
     {
-      name: "Check Buró Crédito", price: 125, focus: "Historial Financiero",
+      // Antes: 125 -> Ahora: 139
+      name: "Check Buró Crédito", price: 139, focus: "Historial Financiero",
       details: "Consulta especializada del historial crediticio. Detecta sobreendeudamiento o responsabilidad patrimonial. Ideal para puestos financieros o manejo de valores.",
       icon: <FileBarChart size={28} className="text-white" />,
       features: ["Reporte + Score Riesgo", "Vigencia 3 Meses", "Add-on Opcional"],
@@ -72,28 +80,40 @@ export default function PricingPage() {
     }
   ];
 
-  // GRUPO 2: PLANES POR VACANTE
+  // GRUPO 2: PLANES POR VACANTE (Precios Ajustados +10%)
   const groupVacancies = [
-    { name: "Plan Semilla", price: 1875, focus: "3 Vacantes", description: "Infraestructura de validación para procesos iniciales con 3 veces más capacidad y vigencia real de tres meses para optimizar procesos administrativos.", icon: <Rocket size={28} />, features: ["3 Vacantes Activas", "15 Baterías Estándar", "Vigencia 3 Meses", "Add-ons Disponibles"], savings: "Ventaja: 3 meses de uso", extraCandidate: "$180 MXN", buttonText: "Elegir Semilla", btnStyle: "border border-white/20 hover:bg-white/5 text-white" },
-    { name: "Plan Impulso", price: 4800, focus: "7 Vacantes", description: "Diseñado para empresas en fase de crecimiento con flujo constante de contrataciones. Incluye reportes comparativos para selección de talento.", icon: <TrendingDown size={28} />, features: ["7 Vacantes Activas", "35 Baterías Estándar", "Vigencia 3 Meses", "Add-ons Disponibles"], savings: "Ideal para crecimiento", extraCandidate: "$165 MXN", buttonText: "Elegir Impulso", btnStyle: "border border-white/20 hover:bg-white/5 text-white" },
-    { name: "Plan Startup", price: 8175, focus: "15 Vacantes", description: "Crecimiento continuo con validación de antecedentes penales integrada de forma acelerada. Ideal para empresas con ritmo de contratación medio-alto.", icon: <Users size={28} />, features: ["15 Vacantes Activas", "75 Baterías Estándar", "Vigencia 3 Meses", "BGC Nacional Incluido"], savings: "EL MÁS POPULAR", highlight: true, extraCandidate: "$145 MXN", buttonText: "Elegir Startup", btnStyle: "bg-[#00AEEF] text-[#001233] font-bold hover:bg-white shadow-[0_0_20px_rgba(0,174,239,0.4)]" },
-    { name: "Plan Expansión", price: 12300, focus: "25 Vacantes", description: "Consolidación operativa con el costo por evaluación más bajo del mercado para PyMEs. Soporte prioritario para reclutamiento masivo y especializado.", icon: <Building2 size={28} />, features: ["25 Vacantes Activas", "125 Baterías Estándar", "Vigencia 3 Meses", "Add-ons Disponibles"], savings: "Máxima capacidad PyME", extraCandidate: "$125 MXN", buttonText: "Elegir Expansión", btnStyle: "border border-white/20 hover:bg-white/5 text-white" }
+    // Antes: 1875 -> Ahora: 2065
+    { name: "Plan Semilla", price: 2065, focus: "3 Vacantes", description: "Infraestructura de validación para procesos iniciales con 3 veces más capacidad y vigencia real de tres meses para optimizar procesos administrativos.", icon: <Rocket size={28} />, features: ["3 Vacantes Activas", "15 Baterías Estándar", "Vigencia 3 Meses", "Add-ons Disponibles"], savings: "Ventaja: 3 meses de uso", extraCandidate: "$180 MXN", buttonText: "Elegir Semilla", btnStyle: "border border-white/20 hover:bg-white/5 text-white" },
+    // Antes: 4800 -> Ahora: 5280
+    { name: "Plan Impulso", price: 5280, focus: "7 Vacantes", description: "Diseñado para empresas en fase de crecimiento con flujo constante de contrataciones. Incluye reportes comparativos para selección de talento.", icon: <TrendingDown size={28} />, features: ["7 Vacantes Activas", "35 Baterías Estándar", "Vigencia 3 Meses", "Add-ons Disponibles"], savings: "Ideal para crecimiento", extraCandidate: "$165 MXN", buttonText: "Elegir Impulso", btnStyle: "border border-white/20 hover:bg-white/5 text-white" },
+    // Antes: 8175 -> Ahora: 8995
+    { name: "Plan Startup", price: 8995, focus: "15 Vacantes", description: "Crecimiento continuo con validación de antecedentes penales integrada de forma acelerada. Ideal para empresas con ritmo de contratación medio-alto.", icon: <Users size={28} />, features: ["15 Vacantes Activas", "75 Baterías Estándar", "Vigencia 3 Meses", "BGC Nacional Incluido"], savings: "EL MÁS POPULAR", highlight: true, extraCandidate: "$145 MXN", buttonText: "Elegir Startup", btnStyle: "bg-[#00AEEF] text-[#001233] font-bold hover:bg-white shadow-[0_0_20px_rgba(0,174,239,0.4)]" },
+    // Antes: 12300 -> Ahora: 13530
+    { name: "Plan Expansión", price: 13530, focus: "25 Vacantes", description: "Consolidación operativa con el costo por evaluación más bajo del mercado para PyMEs. Soporte prioritario para reclutamiento masivo y especializado.", icon: <Building2 size={28} />, features: ["25 Vacantes Activas", "125 Baterías Estándar", "Vigencia 3 Meses", "Add-ons Disponibles"], savings: "Máxima capacidad PyME", extraCandidate: "$125 MXN", buttonText: "Elegir Expansión", btnStyle: "border border-white/20 hover:bg-white/5 text-white" }
   ];
 
-  // GRUPO 3: CORPORATIVO UNLIMITED
+  // GRUPO 3: CORPORATIVO UNLIMITED (Precios Ajustados +10%)
   const groupUnlimited = [
-    { name: "Unlimited Mensual", price: 4630, focus: "Acceso Total", description: "Acceso ilimitado total para cerrar proyectos críticos de un solo mes. Infraestructura de élite sin restricciones de volumen.", icon: <Zap size={28} />, features: ["Aplicaciones Ilimitadas", "Catálogo Élite (Todo)", "Vigencia 1 Mes", "Multiusuario (3)"], buttonText: "Activar Mes", highlight: false, btnStyle: "border border-white/20 hover:bg-white/5 text-white" },
-    { name: "Unlimited Trimestral", price: 12920, focus: "Estrategia RH", description: "Ahorro masivo en proyectos trimestrales con soporte especializado. Incluye soporte vía WhatsApp para atención inmediata.", icon: <Layers size={28} />, features: ["Aplicaciones Ilimitadas", "Catálogo Élite (Todo)", "Vigencia 3 Meses", "Soporte WhatsApp"], savings: "Ahorra con tu código", buttonText: "Elegir Trimestral", highlight: false, btnStyle: "border border-white/20 hover:bg-white/5 text-white" },
-    { name: "Unlimited Semestral", price: 22500, focus: "Corporativo", description: "Continuidad operativa semestral con infraestructura de élite y validación profunda. Optimizado para consultoras y departamentos de RH.", icon: <Target size={28} className="text-[#00AEEF]" />, features: ["Aplicaciones Ilimitadas", "Catálogo Élite (Todo)", "Vigencia 6 Meses", "Soporte VIP"], savings: "Plan Recomendado", buttonText: "Elegir Semestral", highlight: true, btnStyle: "bg-[#00AEEF] text-[#001233] font-bold hover:bg-white" },
-    { name: "Unlimited Anual", price: 41418, focus: "Máxima Rentabilidad", description: "La infraestructura corporativa más potente para validación anual constante. Se convierte en el estándar de validación de la organización.", icon: <Globe size={28} />, features: ["Aplicaciones Ilimitadas", "Catálogo Élite (Todo)", "Vigencia 12 Meses", "White Label (Marca)"], savings: "Mejor Valor Anual", buttonText: "Contrato Anual", highlight: false, btnStyle: "border border-white/20 hover:bg-white/5 text-white" }
+    // Antes: 4630 -> Ahora: 5095
+    { name: "Unlimited Mensual", price: 5095, focus: "Acceso Total", description: "Acceso ilimitado total para cerrar proyectos críticos de un solo mes. Infraestructura de élite sin restricciones de volumen.", icon: <Zap size={28} />, features: ["Aplicaciones Ilimitadas", "Catálogo Élite (Todo)", "Vigencia 1 Mes", "Multiusuario (3)"], buttonText: "Activar Mes", highlight: false, btnStyle: "border border-white/20 hover:bg-white/5 text-white" },
+    // Antes: 12920 -> Ahora: 14215
+    { name: "Unlimited Trimestral", price: 14215, focus: "Estrategia RH", description: "Ahorro masivo en proyectos trimestrales con soporte especializado. Incluye soporte vía WhatsApp para atención inmediata.", icon: <Layers size={28} />, features: ["Aplicaciones Ilimitadas", "Catálogo Élite (Todo)", "Vigencia 3 Meses", "Soporte WhatsApp"], savings: "Ahorra con tu código", buttonText: "Elegir Trimestral", highlight: false, btnStyle: "border border-white/20 hover:bg-white/5 text-white" },
+    // Antes: 22500 -> Ahora: 24750
+    { name: "Unlimited Semestral", price: 24750, focus: "Corporativo", description: "Continuidad operativa semestral con infraestructura de élite y validación profunda. Optimizado para consultoras y departamentos de RH.", icon: <Target size={28} className="text-[#00AEEF]" />, features: ["Aplicaciones Ilimitadas", "Catálogo Élite (Todo)", "Vigencia 6 Meses", "Soporte VIP"], savings: "Plan Recomendado", buttonText: "Elegir Semestral", highlight: true, btnStyle: "bg-[#00AEEF] text-[#001233] font-bold hover:bg-white" },
+    // Antes: 41418 -> Ahora: 45560
+    { name: "Unlimited Anual", price: 45560, focus: "Máxima Rentabilidad", description: "La infraestructura corporativa más potente para validación anual constante. Se convierte en el estándar de validación de la organización.", icon: <Globe size={28} />, features: ["Aplicaciones Ilimitadas", "Catálogo Élite (Todo)", "Vigencia 12 Meses", "White Label (Marca)"], savings: "Mejor Valor Anual", buttonText: "Contrato Anual", highlight: false, btnStyle: "border border-white/20 hover:bg-white/5 text-white" }
   ];
 
-  // PRECIOS BACKGROUND CHECK (10% descuento aplicado)
+  // PRECIOS BACKGROUND CHECK (También subidos +10% sobre la base anterior)
   const bcPrices = {
-    presencialStd: 1157, 
-    presencialUrg: 1542, 
-    digitalStd: 899,    
-    digitalUrg: 1157     
+    // Antes: 1157 -> Ahora: 1275
+    presencialStd: 1275, 
+    // Antes: 1542 -> Ahora: 1695
+    presencialUrg: 1695, 
+    // Antes: 899 -> Ahora: 990
+    digitalStd: 990,    
+    // Antes: 1157 -> Ahora: 1275
+    digitalUrg: 1275     
   };
 
   const digitalSavings = bcPrices.presencialStd - bcPrices.digitalStd; 
