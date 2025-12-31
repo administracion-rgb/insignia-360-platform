@@ -1,7 +1,8 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, KeyRound 
+  Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, 
+  KeyRound, Phone, User, Building
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
@@ -9,49 +10,38 @@ import { createBrowserClient } from '@supabase/ssr';
 export default function LoginPage() {
   const router = useRouter();
   
-  // --- CORRECCIÓN AQUÍ ---
-  // Usamos '||' para proveer valores falsos si las variables no están listas durante el build.
-  // Esto evita el error: "Your project's URL and API key are required"
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
-  );
+  const supabase = useMemo(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
+    return createBrowserClient(url, key);
+  }, []);
   
-  // ESTADOS DEL FLUJO
   const [step, setStep] = useState<'CREDENTIALS' | 'OTP'>('CREDENTIALS'); 
   const [isLoginMode, setIsLoginMode] = useState(true); 
-  
-  // DATOS
-  const [formData, setFormData] = useState({ name: '', company: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', company: '', phone: '', email: '', password: '' });
   const [otpCode, setOtpCode] = useState(['', '', '', '', '', '']); 
-  
-  // UI
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Carrusel
   const slides = [
-    { title: "Seguridad Bancaria", desc: "Autenticación de doble factor para proteger tu información corporativa.", author: "Insignia Security" },
-    { title: "Portal Único", desc: "Gestiona todo tu capital humano desde un solo punto de acceso validado.", author: "Eficiencia 2025" },
-    { title: "Datos Encriptados", desc: "Tus credenciales viajan seguras con cifrado de extremo a extremo.", author: "Compliance Tech" }
+    { title: "Seguridad Bancaria", desc: "Autenticación de doble factor para proteger tu información.", author: "Insignia Security" },
+    { title: "Portal Único", desc: "Gestiona todo tu capital humano desde un solo punto.", author: "Eficiencia 2025" },
+    { title: "Cumplimiento Total", desc: "Procesos bajo la Ley de Protección de Datos y normas STPS.", author: "Legal Compliance" }
   ];
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentSlide((prev) => (prev + 1) % slides.length), 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
-  // --- 1. ENVIAR CREDENCIALES ---
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-
     try {
       if (isLoginMode) {
-        // LOGIN
         const { error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
@@ -59,43 +49,31 @@ export default function LoginPage() {
         if (error) throw error;
         router.push('/dashboard'); 
       } else {
-        // REGISTRO
         const { error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
-          options: {
-            data: { full_name: formData.name, company: formData.company },
-          },
+          options: { data: { full_name: formData.name, company: formData.company, phone: formData.phone } },
         });
         if (error) throw error;
         setStep('OTP'); 
       }
     } catch (err: any) {
-      setError(err.message || 'Error de autenticación');
+      setError(err.message || 'Error de conexión.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // --- 2. VERIFICAR CÓDIGO (OTP) ---
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
-    
     const token = otpCode.join('');
-    
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        email: formData.email,
-        token: token,
-        type: 'signup'
-      });
-
+      const { error } = await supabase.auth.verifyOtp({ email: formData.email, token, type: 'signup' });
       if (error) throw error;
       router.push('/dashboard'); 
     } catch (err: any) {
-      setError('Código incorrecto o expirado.');
+      setError('Código incorrecto.');
     } finally {
       setIsLoading(false);
     }
@@ -109,73 +87,116 @@ export default function LoginPage() {
     if (value && index < 5) document.getElementById(`otp-${index + 1}`)?.focus();
   };
 
+  // CLASE DEFINITIVA: Forzamos el color negro (#000000) para evitar que se pierda
+  const inputBaseStyle = "w-full bg-white border-2 border-slate-300 text-black placeholder:text-slate-400 rounded-xl text-sm font-black outline-none focus:border-[#00AEEF] transition-all shadow-sm autofill:shadow-[0_0_0_30px_white_inset]";
+
   return (
     <div className="min-h-screen w-full flex font-sans bg-white">
-      {/* IZQUIERDA (MARKETING) */}
       <div className="hidden lg:flex w-1/2 bg-[#001233] relative flex-col justify-between p-12 text-white overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-[#001233] via-[#001233]/80 to-transparent z-10" />
-        <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center mix-blend-luminosity" />
-        
-        <div className="relative z-20 flex items-center gap-2"><div className="w-8 h-8 bg-[#00AEEF] rounded-lg flex items-center justify-center font-black text-[#001233]">I</div><span className="font-bold text-xl tracking-tight">INSIGNIA<span className="text-[#00AEEF]">360</span></span></div>
-        
+        <div className="relative z-20 flex items-center gap-2">
+           <div className="w-10 h-10 bg-[#00AEEF] rounded-xl flex items-center justify-center font-black text-[#001233] text-xl">I</div>
+           <span className="font-bold text-2xl tracking-tighter uppercase italic">Insignia<span className="text-[#00AEEF]">360</span></span>
+        </div>
         <div className="relative z-20 max-w-lg mb-10">
-           <div className="transition-opacity duration-500 ease-in-out">
-              <h2 className="text-4xl font-black italic uppercase leading-tight mb-4 tracking-tight">{slides[currentSlide].title}</h2>
-              <p className="text-blue-100/80 text-lg leading-relaxed mb-6">"{slides[currentSlide].desc}"</p>
-           </div>
-           <div className="flex gap-2 mt-8">{slides.map((_, idx) => (<button key={idx} onClick={() => setCurrentSlide(idx)} className={`h-1.5 rounded-full transition-all duration-300 ${currentSlide === idx ? 'w-8 bg-white' : 'w-2 bg-white/30 hover:bg-white/50'}`} />))}</div>
+           <h2 className="text-5xl font-black italic uppercase leading-none mb-4 tracking-tighter">{slides[currentSlide].title}</h2>
+           <p className="text-blue-100/80 text-lg italic">"{slides[currentSlide].desc}"</p>
         </div>
       </div>
 
-      {/* DERECHA (FORMULARIO DINÁMICO) */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
-        <div className="w-full max-w-md space-y-8 animate-in slide-in-from-right-4 duration-500">
-          
+        <div className="w-full max-w-md space-y-8">
           {step === 'CREDENTIALS' ? (
             <>
               <div className="text-center lg:text-left">
-                <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">{isLoginMode ? 'Bienvenido' : 'Crear Cuenta'}</h2>
-                <p className="text-slate-500 text-sm">{isLoginMode ? 'Ingresa tus credenciales.' : 'Regístrate para validar tu identidad.'}</p>
+                <h2 className="text-4xl font-black text-[#001233] tracking-tighter uppercase italic mb-2">{isLoginMode ? 'Bienvenido' : 'Crear Cuenta'}</h2>
+                <p className="text-slate-500 font-medium">Ingresa tus datos para continuar.</p>
               </div>
 
-              <form onSubmit={handleAuth} className="space-y-5">
+              <form onSubmit={handleAuth} className="space-y-4">
                 {!isLoginMode && (
-                   <div className="grid grid-cols-2 gap-4">
-                     <div className="space-y-1"><label className="text-[10px] font-black text-slate-500 uppercase ml-1">Nombre</label><input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm font-bold outline-none focus:border-[#00AEEF]" onChange={(e) => setFormData({...formData, name: e.target.value})} /></div>
-                     <div className="space-y-1"><label className="text-[10px] font-black text-slate-500 uppercase ml-1">Empresa</label><input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm font-bold outline-none focus:border-[#00AEEF]" onChange={(e) => setFormData({...formData, company: e.target.value})} /></div>
+                   <div className="space-y-4">
+                     <div className="grid grid-cols-2 gap-4">
+                       <div className="relative">
+                          <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                          <input type="text" required className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Nombre" onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                       </div>
+                       <div className="relative">
+                          <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                          <input type="text" required className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Empresa" onChange={(e) => setFormData({...formData, company: e.target.value})} />
+                       </div>
+                     </div>
+                     <div className="relative">
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                        <input type="tel" required className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Teléfono" onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+                     </div>
                    </div>
                 )}
-                <div className="space-y-1"><label className="text-[10px] font-black text-slate-500 uppercase ml-1">Correo</label><div className="relative"><Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} /><input type="email" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-11 py-3.5 text-sm font-bold outline-none focus:border-[#00AEEF]" onChange={(e) => setFormData({...formData, email: e.target.value})} /></div></div>
-                <div className="space-y-1"><label className="text-[10px] font-black text-slate-500 uppercase ml-1">Contraseña</label><div className="relative"><Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} /><input required type={showPassword ? "text" : "password"} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-11 py-3.5 text-sm font-bold outline-none focus:border-[#00AEEF]" onChange={(e) => setFormData({...formData, password: e.target.value})} /><button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div></div>
                 
-                {error && <p className="text-xs text-red-500 font-bold bg-red-50 p-2 rounded text-center">{error}</p>}
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  {/* Forzamos el color del texto inline para asegurar visibilidad */}
+                  <input 
+                    type="email" 
+                    required 
+                    style={{ color: 'black' }} 
+                    className={`${inputBaseStyle} px-11 py-3.5`} 
+                    placeholder="Correo" 
+                    onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                  />
+                </div>
                 
-                <button type="submit" disabled={isLoading} className="w-full bg-[#001233] text-white py-4 rounded-xl font-black uppercase text-xs hover:bg-[#00AEEF] hover:text-[#001233] transition-all flex items-center justify-center gap-2">
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <input 
+                    required 
+                    type={showPassword ? "text" : "password"} 
+                    style={{ color: 'black' }} 
+                    className={`${inputBaseStyle} px-11 py-3.5`} 
+                    placeholder="Contraseña" 
+                    onChange={(e) => setFormData({...formData, password: e.target.value})} 
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                
+                {error && <p className="text-xs font-bold text-red-500 bg-red-50 p-3 rounded-xl text-center">{error}</p>}
+                
+                <button type="submit" disabled={isLoading} className="w-full bg-[#001233] text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-[#00AEEF] transition-all flex items-center justify-center gap-2">
                   {isLoading ? <Loader2 className="animate-spin" size={16} /> : <>{isLoginMode ? 'Ingresar' : 'Continuar'} <ArrowRight size={16} /></>}
                 </button>
               </form>
               
-              <div className="text-center pt-4"><button onClick={() => setIsLoginMode(!isLoginMode)} className="text-[#00AEEF] text-xs font-black uppercase hover:underline">{isLoginMode ? 'Crear Cuenta Corporativa' : 'Iniciar Sesión'}</button></div>
+              <div className="text-center pt-4">
+                <button onClick={() => setIsLoginMode(!isLoginMode)} className="text-[#00AEEF] text-xs font-black uppercase hover:underline">
+                  {isLoginMode ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia Sesión'}
+                </button>
+              </div>
             </>
           ) : (
-            <div className="text-center animate-in zoom-in-95">
-               <div className="w-16 h-16 bg-blue-50 text-[#00AEEF] rounded-full flex items-center justify-center mx-auto mb-6"><KeyRound size={32} /></div>
-               <h2 className="text-2xl font-black text-slate-900 uppercase italic mb-2">Código de Seguridad</h2>
-               <p className="text-slate-500 text-sm mb-8 px-4">Hemos enviado un código de 6 dígitos a <br/><span className="font-bold text-slate-800">{formData.email}</span>.</p>
+            <div className="text-center">
+               <div className="w-20 h-20 bg-blue-50 text-[#00AEEF] rounded-3xl flex items-center justify-center mx-auto mb-6"><KeyRound size={40} /></div>
+               <h2 className="text-3xl font-black text-[#001233] uppercase italic mb-2">Validación</h2>
+               <p className="text-slate-500 mb-8 px-4">Código enviado a <span className="font-bold">{formData.email}</span></p>
 
-               <form onSubmit={handleVerifyOtp}>
-                 <div className="flex justify-center gap-2 mb-8">
+               <form onSubmit={handleVerifyOtp} className="space-y-8">
+                 <div className="flex justify-center gap-2">
                     {otpCode.map((digit, idx) => (
-                      <input key={idx} id={`otp-${idx}`} type="text" maxLength={1} value={digit} onChange={(e) => handleOtpChange(idx, e.target.value)} className="w-12 h-14 border-2 border-slate-200 rounded-xl text-center text-2xl font-black text-slate-800 focus:border-[#00AEEF] focus:outline-none transition-all shadow-sm" />
+                      <input 
+                        key={idx} id={`otp-${idx}`} type="text" maxLength={1} value={digit} 
+                        style={{ color: 'black' }}
+                        onChange={(e) => handleOtpChange(idx, e.target.value)} 
+                        className="w-12 h-16 border-2 border-slate-200 rounded-xl text-center text-3xl font-black outline-none focus:border-[#00AEEF]" 
+                      />
                     ))}
                  </div>
-                 {error && <p className="text-xs text-red-500 font-bold mb-4">{error}</p>}
-                 <button type="submit" disabled={isLoading} className="w-full bg-[#00AEEF] text-[#001233] py-4 rounded-xl font-black uppercase text-xs hover:bg-[#001233] hover:text-white transition-all shadow-lg">{isLoading ? <Loader2 className="animate-spin mx-auto" size={16} /> : 'Verificar Acceso'}</button>
+                 <button type="submit" disabled={isLoading} className="w-full bg-[#00AEEF] text-[#001233] py-4 rounded-xl font-black uppercase text-xs">
+                    {isLoading ? 'Validando...' : 'Verificar'}
+                 </button>
                </form>
-               <button onClick={() => setStep('CREDENTIALS')} className="mt-6 text-slate-400 text-xs font-bold hover:text-slate-600">Volver / Corregir correo</button>
             </div>
           )}
-          
         </div>
       </div>
     </div>
