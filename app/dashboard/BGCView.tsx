@@ -245,6 +245,11 @@ export default function BGCView() {
           </tbody>
         </table>
       </div>
+      
+      {/* Footer */}
+      <div className="mt-4 flex justify-end text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+        Visualizando {filteredRequests.length} de {requests.length} Solicitudes
+      </div>
     </div>
   );
 }
