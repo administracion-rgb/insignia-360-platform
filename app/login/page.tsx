@@ -10,12 +10,9 @@ import { createBrowserClient } from '@supabase/ssr';
 export default function LoginPage() {
   const router = useRouter();
   
-  // Cliente de Supabase con detección de errores de entorno
   const supabase = useMemo(() => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
-    // Si faltan las variables en Vercel, usamos placeholders para que no explote el build
     return createBrowserClient(
       url || 'https://placeholder.supabase.co', 
       key || 'placeholder-key'
@@ -47,8 +44,7 @@ export default function LoginPage() {
     setIsLoading(true);
     setError('');
 
-    // Verificación de variables en tiempo de ejecución
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('placeholder') || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')) {
         setError('Error de configuración: Las llaves de Supabase no están cargadas en Vercel.');
         setIsLoading(false);
         return;
@@ -75,9 +71,8 @@ export default function LoginPage() {
         setStep('OTP'); 
       }
     } catch (err: any) {
-      // Si el error es Failed to fetch, es 100% problema de las variables de entorno o red
       setError(err.message === 'Failed to fetch' 
-        ? 'No se pudo conectar con el servidor. Verifica tu conexión o las variables en Vercel.' 
+        ? 'Error de conexión. Revisa las variables de entorno en Vercel.' 
         : err.message);
     } finally {
       setIsLoading(false);
@@ -89,7 +84,6 @@ export default function LoginPage() {
     setIsLoading(true);
     const token = otpCode.join('');
     try {
-      // Usamos el correo del formulario para validar
       const { error } = await supabase.auth.verifyOtp({ 
         email: formData.email, 
         token, 
@@ -98,7 +92,7 @@ export default function LoginPage() {
       if (error) throw error;
       router.push('/dashboard'); 
     } catch (err: any) {
-      setError('Código incorrecto o expirado. Intenta de nuevo.');
+      setError('Código incorrecto o expirado.');
     } finally {
       setIsLoading(false);
     }
@@ -112,17 +106,17 @@ export default function LoginPage() {
     if (value && index < 5) document.getElementById(`otp-${index + 1}`)?.focus();
   };
 
-  // ESTILO DE INPUT REFORZADO:
-  // 1. Color de texto negro puro (#000000)
-  // 2. Desactivamos el estilo de autocompletado azul del navegador
+  // --- SOLUCIÓN DEFINITIVA DE VISIBILIDAD ---
+  // shadow-inset elimina el fondo azul del autocompletado.
+  // [-webkit-text-fill-color:black] obliga al texto a ser negro siempre.
   const inputBaseStyle = `
     w-full bg-white border-2 border-slate-300 
     text-black placeholder:text-slate-400 
     rounded-xl text-sm font-black outline-none 
-    focus:border-[#00AEEF] focus:ring-4 focus:ring-[#00AEEF]/10 
-    transition-all shadow-sm
+    focus:border-[#00AEEF] transition-all 
     autofill:shadow-[0_0_0_30px_white_inset]
-    autofill:text-fill-black
+    autofill:[-webkit-text-fill-color:black]
+    [-webkit-text-fill-color:black]
   `.replace(/\s+/g, ' ').trim();
 
   return (
@@ -139,9 +133,8 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white overflow-y-auto">
-        <div className="w-full max-w-md space-y-8 animate-in slide-in-from-bottom-4 duration-700">
-          
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
+        <div className="w-full max-w-md space-y-8">
           {step === 'CREDENTIALS' ? (
             <>
               <div className="text-center lg:text-left">
@@ -155,28 +148,28 @@ export default function LoginPage() {
                      <div className="grid grid-cols-2 gap-4">
                        <div className="relative">
                           <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                          <input type="text" required style={{color: 'black'}} className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Nombre" onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                          <input type="text" required className={inputBaseStyle} placeholder="Nombre" onChange={(e) => setFormData({...formData, name: e.target.value})} />
                        </div>
                        <div className="relative">
                           <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                          <input type="text" required style={{color: 'black'}} className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Empresa" onChange={(e) => setFormData({...formData, company: e.target.value})} />
+                          <input type="text" required className={inputBaseStyle} placeholder="Empresa" onChange={(e) => setFormData({...formData, company: e.target.value})} />
                        </div>
                      </div>
                      <div className="relative">
                         <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                        <input type="tel" required style={{color: 'black'}} className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Teléfono" onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+                        <input type="tel" required className={inputBaseStyle} placeholder="Teléfono" onChange={(e) => setFormData({...formData, phone: e.target.value})} />
                      </div>
                    </div>
                 )}
                 
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input type="email" required style={{color: 'black'}} className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Correo" onChange={(e) => setFormData({...formData, email: e.target.value})} />
+                  <input type="email" required className={inputBaseStyle} placeholder="Correo" onChange={(e) => setFormData({...formData, email: e.target.value})} />
                 </div>
                 
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input required type={showPassword ? "text" : "password"} style={{color: 'black'}} className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Contraseña" onChange={(e) => setFormData({...formData, password: e.target.value})} />
+                  <input required type={showPassword ? "text" : "password"} className={inputBaseStyle} placeholder="Contraseña" onChange={(e) => setFormData({...formData, password: e.target.value})} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -184,42 +177,36 @@ export default function LoginPage() {
                 
                 {error && <p className="text-xs font-bold text-red-500 bg-red-50 p-3 rounded-xl border border-red-100 text-center">{error}</p>}
                 
-                <button type="submit" disabled={isLoading} className="w-full bg-[#001233] text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-[#00AEEF] transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2">
+                <button type="submit" disabled={isLoading} className="w-full bg-[#001233] text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-[#00AEEF] transition-all shadow-xl flex items-center justify-center gap-2">
                   {isLoading ? <Loader2 className="animate-spin" size={16} /> : <>{isLoginMode ? 'Ingresar' : 'Continuar'} <ArrowRight size={16} /></>}
                 </button>
               </form>
-              
-              <div className="text-center pt-4">
-                <button onClick={() => { setIsLoginMode(!isLoginMode); setError(''); }} className="text-[#00AEEF] text-xs font-black uppercase hover:underline">
-                  {isLoginMode ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia Sesión'}
-                </button>
-              </div>
             </>
           ) : (
             <div className="text-center animate-in zoom-in-95 duration-500">
                <div className="w-20 h-20 bg-blue-50 text-[#00AEEF] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm"><KeyRound size={40} /></div>
-               <h2 className="text-3xl font-black text-[#001233] uppercase italic mb-2">Validación</h2>
-               <p className="text-slate-500 font-medium mb-8 px-4">Código de 6 dígitos enviado a <span className="text-[#001233] font-bold">{formData.email}</span></p>
-
+               <h2 className="text-3xl font-black text-[#001233] uppercase italic mb-2 tracking-tighter">Validación</h2>
                <form onSubmit={handleVerifyOtp} className="space-y-8">
                  <div className="flex justify-center gap-2">
                     {otpCode.map((digit, idx) => (
                       <input 
                         key={idx} id={`otp-${idx}`} type="text" maxLength={1} value={digit} 
-                        style={{ color: 'black' }}
                         onChange={(e) => handleOtpChange(idx, e.target.value)} 
-                        className="w-12 h-16 border-2 border-slate-200 rounded-xl text-center text-3xl font-black text-black focus:border-[#00AEEF] focus:bg-blue-50/30 outline-none transition-all" 
+                        className="w-12 h-16 border-2 border-slate-200 rounded-xl text-center text-3xl font-black text-black focus:border-[#00AEEF] outline-none transition-all" 
                       />
                     ))}
                  </div>
-                 {error && <p className="text-xs font-bold text-red-500">{error}</p>}
                  <button type="submit" disabled={isLoading} className="w-full bg-[#00AEEF] text-[#001233] py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-[#001233] hover:text-white transition-all shadow-lg">
                     {isLoading ? 'Validando...' : 'Verificar Código'}
                  </button>
                </form>
-               <button onClick={() => setStep('CREDENTIALS')} className="mt-8 text-slate-400 text-xs font-bold uppercase tracking-widest hover:text-slate-600 underline">Volver al registro</button>
             </div>
           )}
+          <div className="text-center pt-4">
+            <button onClick={() => { setIsLoginMode(!isLoginMode); setError(''); setStep('CREDENTIALS'); }} className="text-[#00AEEF] text-xs font-black uppercase hover:underline">
+              {isLoginMode ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia Sesión'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
