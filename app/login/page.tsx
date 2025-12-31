@@ -45,7 +45,7 @@ export default function LoginPage() {
     setError('');
 
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')) {
-        setError('Error de configuración: Las llaves de Supabase no están cargadas en Vercel.');
+        setError('Error crítico: Las llaves de Supabase no están cargadas en Vercel. Revisa las variables de entorno.');
         setIsLoading(false);
         return;
     }
@@ -72,7 +72,7 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       setError(err.message === 'Failed to fetch' 
-        ? 'Error de conexión. Revisa las variables de entorno en Vercel.' 
+        ? 'Error de conexión. Verifica tus variables en Vercel y tu red.' 
         : err.message);
     } finally {
       setIsLoading(false);
@@ -92,7 +92,7 @@ export default function LoginPage() {
       if (error) throw error;
       router.push('/dashboard'); 
     } catch (err: any) {
-      setError('Código incorrecto o expirado.');
+      setError('Código incorrecto o expirado. Intenta nuevamente.');
     } finally {
       setIsLoading(false);
     }
@@ -106,21 +106,26 @@ export default function LoginPage() {
     if (value && index < 5) document.getElementById(`otp-${index + 1}`)?.focus();
   };
 
-  // --- SOLUCIÓN DEFINITIVA DE VISIBILIDAD ---
-  // shadow-inset elimina el fondo azul del autocompletado.
-  // [-webkit-text-fill-color:black] obliga al texto a ser negro siempre.
-  const inputBaseStyle = `
-    w-full bg-white border-2 border-slate-300 
-    text-black placeholder:text-slate-400 
-    rounded-xl text-sm font-black outline-none 
-    focus:border-[#00AEEF] transition-all 
-    autofill:shadow-[0_0_0_30px_white_inset]
-    autofill:[-webkit-text-fill-color:black]
-    [-webkit-text-fill-color:black]
-  `.replace(/\s+/g, ' ').trim();
+  // --- ESTILOS LIMPIOS (Sin hacks aquí) ---
+  // Esto arregla el "horrible" en localhost.
+  const inputTailwind = "w-full bg-white border-2 border-slate-300 text-[#001233] placeholder:text-slate-400 rounded-xl text-sm font-black outline-none focus:border-[#00AEEF] focus:ring-4 focus:ring-[#00AEEF]/10 transition-all shadow-sm relative z-10";
 
   return (
     <div className="min-h-screen w-full flex font-sans bg-white">
+      {/* --- CSS HACK PARA VERCEL/AUTOCOMPLETE --- */}
+      {/* Este bloque solo se activa cuando el navegador intenta autocompletar */}
+      <style jsx global>{`
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px white inset !important;
+            -webkit-text-fill-color: #001233 !important;
+            border-color: #cbd5e1 !important; /* Mantiene el borde slate-300 */
+            transition: background-color 5000s ease-in-out 0s; /* Evita parpadeo */
+        }
+      `}</style>
+
       <div className="hidden lg:flex w-1/2 bg-[#001233] relative flex-col justify-between p-12 text-white overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-[#001233] via-[#001233]/80 to-transparent z-10" />
         <div className="relative z-20 flex items-center gap-2">
@@ -147,30 +152,30 @@ export default function LoginPage() {
                    <div className="space-y-4">
                      <div className="grid grid-cols-2 gap-4">
                        <div className="relative">
-                          <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                          <input type="text" required className={inputBaseStyle} placeholder="Nombre" onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                          <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 z-20" size={16} />
+                          <input type="text" required className={`${inputTailwind} px-11 py-3.5`} placeholder="Nombre" onChange={(e) => setFormData({...formData, name: e.target.value})} />
                        </div>
                        <div className="relative">
-                          <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                          <input type="text" required className={inputBaseStyle} placeholder="Empresa" onChange={(e) => setFormData({...formData, company: e.target.value})} />
+                          <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 z-20" size={16} />
+                          <input type="text" required className={`${inputTailwind} px-11 py-3.5`} placeholder="Empresa" onChange={(e) => setFormData({...formData, company: e.target.value})} />
                        </div>
                      </div>
                      <div className="relative">
-                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                        <input type="tel" required className={inputBaseStyle} placeholder="Teléfono" onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 z-20" size={16} />
+                        <input type="tel" required className={`${inputTailwind} px-11 py-3.5`} placeholder="Teléfono" onChange={(e) => setFormData({...formData, phone: e.target.value})} />
                      </div>
                    </div>
                 )}
                 
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input type="email" required className={inputBaseStyle} placeholder="Correo" onChange={(e) => setFormData({...formData, email: e.target.value})} />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 z-20" size={16} />
+                  <input type="email" required className={`${inputTailwind} px-11 py-3.5`} placeholder="Correo" onChange={(e) => setFormData({...formData, email: e.target.value})} />
                 </div>
                 
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input required type={showPassword ? "text" : "password"} className={inputBaseStyle} placeholder="Contraseña" onChange={(e) => setFormData({...formData, password: e.target.value})} />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 z-20" size={16} />
+                  <input required type={showPassword ? "text" : "password"} className={`${inputTailwind} px-11 py-3.5`} placeholder="Contraseña" onChange={(e) => setFormData({...formData, password: e.target.value})} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 z-20">
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
@@ -181,18 +186,26 @@ export default function LoginPage() {
                   {isLoading ? <Loader2 className="animate-spin" size={16} /> : <>{isLoginMode ? 'Ingresar' : 'Continuar'} <ArrowRight size={16} /></>}
                 </button>
               </form>
+              
+              <div className="text-center pt-4">
+                <button onClick={() => { setIsLoginMode(!isLoginMode); setError(''); }} className="text-[#00AEEF] text-xs font-black uppercase hover:underline">
+                  {isLoginMode ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia Sesión'}
+                </button>
+              </div>
             </>
           ) : (
             <div className="text-center animate-in zoom-in-95 duration-500">
                <div className="w-20 h-20 bg-blue-50 text-[#00AEEF] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm"><KeyRound size={40} /></div>
                <h2 className="text-3xl font-black text-[#001233] uppercase italic mb-2 tracking-tighter">Validación</h2>
+               <p className="text-slate-500 font-medium mb-8 px-4">Código de 6 dígitos enviado a <span className="text-[#001233] font-bold">{formData.email}</span></p>
+
                <form onSubmit={handleVerifyOtp} className="space-y-8">
                  <div className="flex justify-center gap-2">
                     {otpCode.map((digit, idx) => (
                       <input 
                         key={idx} id={`otp-${idx}`} type="text" maxLength={1} value={digit} 
                         onChange={(e) => handleOtpChange(idx, e.target.value)} 
-                        className="w-12 h-16 border-2 border-slate-200 rounded-xl text-center text-3xl font-black text-black focus:border-[#00AEEF] outline-none transition-all" 
+                        className="w-12 h-16 border-2 border-slate-200 rounded-xl text-center text-3xl font-black text-[#001233] focus:border-[#00AEEF] outline-none transition-all" 
                       />
                     ))}
                  </div>
@@ -200,13 +213,9 @@ export default function LoginPage() {
                     {isLoading ? 'Validando...' : 'Verificar Código'}
                  </button>
                </form>
+               <button onClick={() => setStep('CREDENTIALS')} className="mt-8 text-slate-400 text-xs font-bold uppercase tracking-widest hover:text-slate-600 underline">Volver al registro</button>
             </div>
           )}
-          <div className="text-center pt-4">
-            <button onClick={() => { setIsLoginMode(!isLoginMode); setError(''); setStep('CREDENTIALS'); }} className="text-[#00AEEF] text-xs font-black uppercase hover:underline">
-              {isLoginMode ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia Sesión'}
-            </button>
-          </div>
         </div>
       </div>
     </div>
