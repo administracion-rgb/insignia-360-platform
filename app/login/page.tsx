@@ -10,10 +10,16 @@ import { createBrowserClient } from '@supabase/ssr';
 export default function LoginPage() {
   const router = useRouter();
   
+  // Cliente de Supabase con detección de errores de entorno
   const supabase = useMemo(() => {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
-    return createBrowserClient(url, key);
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    // Si faltan las variables en Vercel, usamos placeholders para que no explote el build
+    return createBrowserClient(
+      url || 'https://placeholder.supabase.co', 
+      key || 'placeholder-key'
+    );
   }, []);
   
   const [step, setStep] = useState<'CREDENTIALS' | 'OTP'>('CREDENTIALS'); 
@@ -40,6 +46,14 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+
+    // Verificación de variables en tiempo de ejecución
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('placeholder') || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+        setError('Error de configuración: Las llaves de Supabase no están cargadas en Vercel.');
+        setIsLoading(false);
+        return;
+    }
+
     try {
       if (isLoginMode) {
         const { error } = await supabase.auth.signInWithPassword({
@@ -52,13 +66,19 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
-          options: { data: { full_name: formData.name, company: formData.company, phone: formData.phone } },
+          options: { 
+            data: { full_name: formData.name, company: formData.company, phone: formData.phone },
+            emailRedirectTo: `${window.location.origin}/auth/callback`
+          },
         });
         if (error) throw error;
         setStep('OTP'); 
       }
     } catch (err: any) {
-      setError(err.message || 'Error de conexión.');
+      // Si el error es Failed to fetch, es 100% problema de las variables de entorno o red
+      setError(err.message === 'Failed to fetch' 
+        ? 'No se pudo conectar con el servidor. Verifica tu conexión o las variables en Vercel.' 
+        : err.message);
     } finally {
       setIsLoading(false);
     }
@@ -69,11 +89,16 @@ export default function LoginPage() {
     setIsLoading(true);
     const token = otpCode.join('');
     try {
-      const { error } = await supabase.auth.verifyOtp({ email: formData.email, token, type: 'signup' });
+      // Usamos el correo del formulario para validar
+      const { error } = await supabase.auth.verifyOtp({ 
+        email: formData.email, 
+        token, 
+        type: 'signup' 
+      });
       if (error) throw error;
       router.push('/dashboard'); 
     } catch (err: any) {
-      setError('Código incorrecto.');
+      setError('Código incorrecto o expirado. Intenta de nuevo.');
     } finally {
       setIsLoading(false);
     }
@@ -87,8 +112,18 @@ export default function LoginPage() {
     if (value && index < 5) document.getElementById(`otp-${index + 1}`)?.focus();
   };
 
-  // CLASE DEFINITIVA: Forzamos el color negro (#000000) para evitar que se pierda
-  const inputBaseStyle = "w-full bg-white border-2 border-slate-300 text-black placeholder:text-slate-400 rounded-xl text-sm font-black outline-none focus:border-[#00AEEF] transition-all shadow-sm autofill:shadow-[0_0_0_30px_white_inset]";
+  // ESTILO DE INPUT REFORZADO:
+  // 1. Color de texto negro puro (#000000)
+  // 2. Desactivamos el estilo de autocompletado azul del navegador
+  const inputBaseStyle = `
+    w-full bg-white border-2 border-slate-300 
+    text-black placeholder:text-slate-400 
+    rounded-xl text-sm font-black outline-none 
+    focus:border-[#00AEEF] focus:ring-4 focus:ring-[#00AEEF]/10 
+    transition-all shadow-sm
+    autofill:shadow-[0_0_0_30px_white_inset]
+    autofill:text-fill-black
+  `.replace(/\s+/g, ' ').trim();
 
   return (
     <div className="min-h-screen w-full flex font-sans bg-white">
@@ -104,8 +139,9 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
-        <div className="w-full max-w-md space-y-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white overflow-y-auto">
+        <div className="w-full max-w-md space-y-8 animate-in slide-in-from-bottom-4 duration-700">
+          
           {step === 'CREDENTIALS' ? (
             <>
               <div className="text-center lg:text-left">
@@ -119,66 +155,51 @@ export default function LoginPage() {
                      <div className="grid grid-cols-2 gap-4">
                        <div className="relative">
                           <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                          <input type="text" required className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Nombre" onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                          <input type="text" required style={{color: 'black'}} className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Nombre" onChange={(e) => setFormData({...formData, name: e.target.value})} />
                        </div>
                        <div className="relative">
                           <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                          <input type="text" required className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Empresa" onChange={(e) => setFormData({...formData, company: e.target.value})} />
+                          <input type="text" required style={{color: 'black'}} className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Empresa" onChange={(e) => setFormData({...formData, company: e.target.value})} />
                        </div>
                      </div>
                      <div className="relative">
                         <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                        <input type="tel" required className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Teléfono" onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+                        <input type="tel" required style={{color: 'black'}} className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Teléfono" onChange={(e) => setFormData({...formData, phone: e.target.value})} />
                      </div>
                    </div>
                 )}
                 
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  {/* Forzamos el color del texto inline para asegurar visibilidad */}
-                  <input 
-                    type="email" 
-                    required 
-                    style={{ color: 'black' }} 
-                    className={`${inputBaseStyle} px-11 py-3.5`} 
-                    placeholder="Correo" 
-                    onChange={(e) => setFormData({...formData, email: e.target.value})} 
-                  />
+                  <input type="email" required style={{color: 'black'}} className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Correo" onChange={(e) => setFormData({...formData, email: e.target.value})} />
                 </div>
                 
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input 
-                    required 
-                    type={showPassword ? "text" : "password"} 
-                    style={{ color: 'black' }} 
-                    className={`${inputBaseStyle} px-11 py-3.5`} 
-                    placeholder="Contraseña" 
-                    onChange={(e) => setFormData({...formData, password: e.target.value})} 
-                  />
+                  <input required type={showPassword ? "text" : "password"} style={{color: 'black'}} className={`${inputBaseStyle} px-11 py-3.5`} placeholder="Contraseña" onChange={(e) => setFormData({...formData, password: e.target.value})} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
                 
-                {error && <p className="text-xs font-bold text-red-500 bg-red-50 p-3 rounded-xl text-center">{error}</p>}
+                {error && <p className="text-xs font-bold text-red-500 bg-red-50 p-3 rounded-xl border border-red-100 text-center">{error}</p>}
                 
-                <button type="submit" disabled={isLoading} className="w-full bg-[#001233] text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-[#00AEEF] transition-all flex items-center justify-center gap-2">
+                <button type="submit" disabled={isLoading} className="w-full bg-[#001233] text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-[#00AEEF] transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2">
                   {isLoading ? <Loader2 className="animate-spin" size={16} /> : <>{isLoginMode ? 'Ingresar' : 'Continuar'} <ArrowRight size={16} /></>}
                 </button>
               </form>
               
               <div className="text-center pt-4">
-                <button onClick={() => setIsLoginMode(!isLoginMode)} className="text-[#00AEEF] text-xs font-black uppercase hover:underline">
+                <button onClick={() => { setIsLoginMode(!isLoginMode); setError(''); }} className="text-[#00AEEF] text-xs font-black uppercase hover:underline">
                   {isLoginMode ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia Sesión'}
                 </button>
               </div>
             </>
           ) : (
-            <div className="text-center">
-               <div className="w-20 h-20 bg-blue-50 text-[#00AEEF] rounded-3xl flex items-center justify-center mx-auto mb-6"><KeyRound size={40} /></div>
+            <div className="text-center animate-in zoom-in-95 duration-500">
+               <div className="w-20 h-20 bg-blue-50 text-[#00AEEF] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm"><KeyRound size={40} /></div>
                <h2 className="text-3xl font-black text-[#001233] uppercase italic mb-2">Validación</h2>
-               <p className="text-slate-500 mb-8 px-4">Código enviado a <span className="font-bold">{formData.email}</span></p>
+               <p className="text-slate-500 font-medium mb-8 px-4">Código de 6 dígitos enviado a <span className="text-[#001233] font-bold">{formData.email}</span></p>
 
                <form onSubmit={handleVerifyOtp} className="space-y-8">
                  <div className="flex justify-center gap-2">
@@ -187,14 +208,16 @@ export default function LoginPage() {
                         key={idx} id={`otp-${idx}`} type="text" maxLength={1} value={digit} 
                         style={{ color: 'black' }}
                         onChange={(e) => handleOtpChange(idx, e.target.value)} 
-                        className="w-12 h-16 border-2 border-slate-200 rounded-xl text-center text-3xl font-black outline-none focus:border-[#00AEEF]" 
+                        className="w-12 h-16 border-2 border-slate-200 rounded-xl text-center text-3xl font-black text-black focus:border-[#00AEEF] focus:bg-blue-50/30 outline-none transition-all" 
                       />
                     ))}
                  </div>
-                 <button type="submit" disabled={isLoading} className="w-full bg-[#00AEEF] text-[#001233] py-4 rounded-xl font-black uppercase text-xs">
-                    {isLoading ? 'Validando...' : 'Verificar'}
+                 {error && <p className="text-xs font-bold text-red-500">{error}</p>}
+                 <button type="submit" disabled={isLoading} className="w-full bg-[#00AEEF] text-[#001233] py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-[#001233] hover:text-white transition-all shadow-lg">
+                    {isLoading ? 'Validando...' : 'Verificar Código'}
                  </button>
                </form>
+               <button onClick={() => setStep('CREDENTIALS')} className="mt-8 text-slate-400 text-xs font-bold uppercase tracking-widest hover:text-slate-600 underline">Volver al registro</button>
             </div>
           )}
         </div>
